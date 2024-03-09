@@ -1,3 +1,6 @@
+names_test/*
+sorting/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

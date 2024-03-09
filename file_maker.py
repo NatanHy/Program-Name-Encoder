@@ -15,30 +15,53 @@ def add_tags(code):
 
 def get_encoded(s : str) -> bytes:
     s = s.strip()
-    return base64.b16encode(bytes(s, "utf-8"))
+    return base64.b64encode(bytes(s, "utf-8"))
 
 def make_names(lines : list[str]) -> list[bytes] :
     names = list(map(get_encoded, lines))
 
-    return names[1:]
+    return names
 
-def get_padded_index(num, digits):
-    padding = "0" * (digits - len(str(num)))
+def get_tags(length):
+    d = {}
+    for i in range(length):
+        s = str(i)
+        name = str(base64.b64encode(bytes("#" + s, "utf-8")))
+        d[name] = s
 
-    return padding + str(num)
+    clear_dir("sorting")
+
+    for name in d:
+        open("sorting/" + str(name), "a").close()
+
+    l = []
+
+    for name in os.listdir("sorting"):
+        l.append(d[name])
+
+    clear_dir("sorting")
+
+    # for elm in l:
+    #     print(elm, str(base64.b64encode(bytes("#" + elm, "utf-8"))))
+
+    return l
 
 def read_code(filename):
     lines = []
 
     with open(filename, "r") as f:
-        for i, line in enumerate(f.readlines()):
-            lines.append(f"#{get_padded_index(i, 3)}\n{line}")
+        file_lines = list(f.readlines())
+
+        tags = get_tags(len(file_lines))
+
+        for i, line in enumerate(file_lines):
+            lines.append(f"#{tags[i]}\n{line}".strip())
 
     return lines
 
-def make_files(names):
-    for filename in os.listdir("names_test"):
-        file_path = os.path.join("names_test", filename)
+def clear_dir(dir_name):
+    for filename in os.listdir(dir_name):
+        file_path = os.path.join(dir_name, filename)
         try:
             if os.path.isfile(file_path) or os.path.islink(file_path):
                 os.unlink(file_path)
@@ -47,11 +70,16 @@ def make_files(names):
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
+def make_files(names):
+    clear_dir("names_test")
+
     for name in names:
-        print(str(name)[2:-1])
         open("names_test/" + str(name)[2:-1], "a").close()
 
 lines = read_code("code.txt")
+
+for line in lines:
+    print(line + " -> " + str(get_encoded(line)))
 
 names = make_names(lines)
 
